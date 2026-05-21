@@ -1,46 +1,66 @@
 # CLAUDE.md
 
-Workspace-level guidance for Claude (and other coding agents) operating across the opensubagents stack from this meta-repo.
+Workspace-level guidance for Claude (and any other coding agent) working inside `opensubagents/subagentplatforms`.
 
 ## What this repo is
 
-A pinned snapshot of the 8 sibling repos + the cross-cutting docs nobody else owns. It is **not** a source-of-truth for any code or schema — every code change still happens in the canonical sibling repo. This repo's job is composition: knowing which SHAs of which repos work together, and recording the decisions that span them.
+A **meta-workspace** — the single-clone entry point to the entire opensubagents stack. It contains:
 
-## Where to make a change
+- A map of all 8 sibling repos (README.md)
+- Curated cross-cutting notes that don't belong inside any one sibling (notes/)
+- An interactive HTML diagram of the org (diagrams/org-overview.html)
+- Submodule wiring (.gitmodules + submodules/)
 
-| Kind of change | Repo to edit |
-|---|---|
-| Task data model (schemas, types, fixtures) | `subagenttasks` |
-| Brief shape or first-brief content | `subagentbriefs` |
-| Architecture diagrams or warehouse DDL | `subagentarch` |
-| New MCP tool for TS bootstrap | `ts-bootstrap-mcp` |
-| New skill catalog entry | `subagentskills` |
-| Cross-repo notes, journal, planned-skills sketches | **this repo** (`subagentplatforms`) |
-| Bump the pinned SHA of any sibling | `manifest.json` in this repo |
+It does **not** contain any source code, plugins, or skills. Those live in their canonical repos and are referenced via submodules.
 
-**Rule of thumb:** if your change references concepts from more than one sibling repo, it probably lives here. If it touches one repo's internals, it belongs there.
+## What to do when asked to "update the workspace"
 
-## Standing operational rules (carry over from prior sessions)
+1. If a sibling repo got a meaningful commit worth pinning, update its submodule SHA:
 
-1. **Worker token is never stored anywhere except the worker's secret binding.** Reveal-and-restore is the canonical rotation pattern; do not commit a revealed token to chat history or any repo.
-2. **Direct push to `main` via the gh-pr-mcp worker is the norm** for opensubagents repos. PRs are not used for solo work; they may be added later when the project takes contributors.
-3. **Trust the operator's goal; verify the operator's ingredients.** When the operator names a library or stack, look it up before treating it as a constraint.
-4. **Canonical package shape:** `schema/ + types/ + fixtures/ + tests/ + PRD.md + README.md + VENDORED_FROM.md`. Used in `subagenttasks` and `subagentbriefs`.
-5. **Decompose into linear outcomes; execute.** Don't ask permission for a step that's clearly required by the stated goal.
+   ```bash
+   cd submodules/<repo>
+   git fetch origin && git checkout origin/main
+   cd ../..
+   git add submodules/<repo>
+   git commit -m "chore(submodules): bump <repo> to $(cd submodules/<repo> && git rev-parse --short HEAD)"
+   ```
 
-## Don't commit from here
+2. If a cross-cutting note (architecture map, journal, planned-skills list) is stale, edit the relevant file in `notes/` directly.
 
-This meta-repo lives next to a sandbox that has read-only mounts and ephemeral working dirs. Things that are NEVER safe to commit:
+3. If a new sibling repo joins the org, add it to:
+   - `.gitmodules`
+   - `submodules/README.md` (the materialization command list)
+   - The README.md "Sibling repos" table
+   - `diagrams/org-overview.html` (the visualization)
 
-- `/mnt/skills/*` — Anthropic property, read-only by license
-- `/mnt/transcripts/*` — prior session transcripts; may contain reveal-and-restore content and other operator-private context
-- `/mnt/user-data/uploads/*` — operator's uploaded screenshots, configs, READMEs
-- `/mnt/project/*` — project-attached files (Claude.ai feature)
-- `node_modules/`, `dist/`, `.cache/`, `__pycache__/` — regeneratable build artifacts
-- Vendor clones in `/home/claude/` from Microsoft, Anthropic, Cloudflare, ChromeDevTools — see `VENDORED_FROM.md` for the list
+## What NOT to do here
 
-## Agent etiquette across the stack
+- **Do not commit source code.** Every executable artifact lives in a sibling repo. If you find yourself wanting to add a `src/` directory, you're in the wrong repo — open a PR on the relevant sibling instead.
+- **Do not duplicate content from sibling repos.** Reference, don't copy. If the same fact lives in two places, one of them will rot.
+- **Do not commit anything from `/mnt/transcripts/`, `/mnt/user-data/uploads/`, or `/mnt/skills/`** if you're working from a sandbox. Those are read-only, contain sensitive context, and are not yours to publish.
 
-- When in doubt about a sibling repo's intent, read its `README.md` and its `CLAUDE.md` (if present) BEFORE proposing changes.
-- When bumping a SHA in `manifest.json`, leave a one-line note in `notes/journal.md` explaining what changed in the sibling repo.
-- When deciding between writing notes here vs. authoring a new skill in `subagentskills`, prefer the skill — it activates contextually for future sessions. Notes here are passive reference.
+## Build artifacts
+
+There are none in this repo. There is nothing to build.
+
+## Sibling repos that drive everything
+
+```
+@opensubagents/ts-bootstrap-mcp     MCP plugin: scaffold + install + typecheck TS projects
+@opensubagents/subagentskills       Agent Skills catalog (marketplace.json + skills/)
+@opensubagents/subagentarch         GraphQL ERD + Kimball warehouse for the data model
+@opensubagents/subagenttasks        Zod schemas + tests for the canonical task data model
+@opensubagents/subagenttaskmaster   Rebranded fork of eyaltoledano/claude-task-master
+@opensubagents/subagentbriefs       Brief authoring chassis + 323-page reference crawl
+@opensubagents/subagenthtml         Private fork of anthropics/html-effectiveness
+@opensubagents/subagentlsp          Vendored microsoft/vscode html-language-server
+```
+
+See `README.md` for status and `notes/architecture.md` for how they wire together.
+
+## House style for notes
+
+- Markdown. No JSX, no Mermaid in markdown (use `diagrams/*.html` for visuals).
+- Tables for cross-repo state. Prose for everything else.
+- Curate ruthlessly: a note that hasn't been read in 3 months should be deleted, not preserved.
+- Cite SHAs when referencing a sibling repo's state: ``in `subagentarch@15228221`'' beats "in subagentarch".

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://opensubagents.io/schemas/platform-manifest.v1.json",
+  "platform": "opensubagents",
+  "version": "0.1.0",
+  "generated_at": "2026-05-21",
+  "description": "Pinned snapshot of the opensubagents repo stack. Each entry is a sibling repo and the SHA it was at when this manifest was cut. Clone scripts should treat these as the canonical reference points; rebuild the manifest when any sibling repo advances.",
+  "repos": [
+    {
+      "name": "subagentbriefs",
+      "role": "PRD + brief shape + first canonical brief",
+      "url": "https://github.com/opensubagents/subagentbriefs",
+      "sha": "b538d087",
+      "branch": "main",
+      "size_mb": 152,
+      "notes": "Includes the 323-page Hamster crawl under discovery/."
+    },
+    {
+      "name": "subagenttasks",
+      "role": "canonical task data model: Zod schemas, JSON Schema, types, fixtures, outcome tests",
+      "url": "https://github.com/opensubagents/subagenttasks",
+      "sha": "ab329d2c",
+      "branch": "main"
+    },
+    {
+      "name": "subagenttaskmaster",
+      "role": "vendored eyaltoledano/claude-task-master with opensubagents rebrand pack",
+      "url": "https://github.com/opensubagents/subagenttaskmaster",
+      "sha": "6a9c632a",
+      "branch": "main"
+    },
+    {
+      "name": "subagentarch",
+      "role": "GraphQL ERD + interactive HTML diagrams + AlloyDB/Postgres 17 Kimball warehouse DDL",
+      "url": "https://github.com/opensubagents/subagentarch",
+      "sha": "15228221",
+      "branch": "main"
+    },
+    {
+      "name": "subagenthtml",
+      "role": "private fork of anthropics/html-effectiveness; gallery of report formats",
+      "url": "https://github.com/opensubagents/subagenthtml",
+      "sha": "58c305be",
+      "branch": "main",
+      "visibility": "private"
+    },
+    {
+      "name": "subagentlsp",
+      "role": "vendored microsoft/vscode html-language-server (TypeScript LSP)",
+      "url": "https://github.com/opensubagents/subagentlsp",
+      "sha": "fd99391f",
+      "branch": "main"
+    },
+    {
+      "name": "ts-bootstrap-mcp",
+      "role": "MCP plugin for TypeScript toolchain bootstrap; ships paired skill at skills/ts-bootstrap/",
+      "url": "https://github.com/opensubagents/ts-bootstrap-mcp",
+      "sha": "db22b540",
+      "branch": "main",
+      "npm": "github:opensubagents/ts-bootstrap-mcp",
+      "exposes_mcp_tools": [
+        "ts_env_inspect",
+        "ts_project_init",
+        "ts_install",
+        "ts_typecheck",
+        "ts_run",
+        "ts_build",
+        "ts_clean"
+      ]
+    },
+    {
+      "name": "subagentskills",
+      "role": "catalog of Agent Skills used across the stack; marketplace.json + skills/<name>/",
+      "url": "https://github.com/opensubagents/subagentskills",
+      "sha": "17557d5f",
+      "branch": "main",
+      "released_skills": ["ts-bootstrap"],
+      "planned_skills": [
+        "reveal-and-restore-worker-token",
+        "html-effectiveness-builder",
+        "subagenttasks-validator",
+        "graphql-erd-from-zod",
+        "brief-author-canonical"
+      ]
+    }
+  ],
+  "external_workers": [
+    {
+      "name": "gh-pr-mcp",
+      "role": "Cloudflare Worker that fronts GitHub Git Data API with a dual-token model; used throughout to push commits without exposing the token to chat history",
+      "url": "https://gh-pr-mcp.alex-e62.workers.dev",
+      "version": "0.4.1",
+      "exposes_mcp_tools": ["gh_init_repo", "gh_request", "gh_open_pr"],
+      "known_token_constraints": [
+        "/git/trees blocked on newly-created repos (403 Resource not accessible by integration)",
+        ".github/workflows/* blocked (no workflows: write scope)",
+        "paths containing the substring 'workflows' blocked even outside .github/",
+        "Contents API used as fallback cannot set mode 100755"
+      ]
+    }
+  ]
+}

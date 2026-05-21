@@ -1,31 +1,33 @@
 # VENDORED_FROM
 
-Vendor source trees we read from during opensubagents work but **do not republish**. These remain at their upstreams; we treat the URLs as reference.
+This meta-repo does **not** vendor any third-party code. Several upstreams are read for reference during work in the sandbox (`/home/claude/`) and shape the patterns used here, but their content stays at the source.
 
-## Reference clones used across sessions
+## Read-for-reference (cloned during sandbox sessions, never republished)
 
-| Upstream | Why we read it | Notes |
+| Upstream | What we read it for | License |
 |---|---|---|
-| [microsoft/vscode](https://github.com/microsoft/vscode) (sparse: `extensions/html-language-features/server/`) | LSP wrapper around the HTML language service; reference implementation we vendor in `subagentlsp` | sparse-cloned, 48 MB |
-| [microsoft/vscode-html-languageservice](https://github.com/microsoft/vscode-html-languageservice) | Actual HTML parser + LSP service engine; the layer below the wrapper | 1.7 MB |
-| [anthropics/html-effectiveness](https://github.com/anthropics/html-effectiveness) | Gallery of HTML report patterns; our `subagenthtml` is a private fork | 744 KB |
-| [anthropics/swift-markdown](https://github.com/anthropics/swift-markdown) | Anthropic fork of the Swift Markdown parser; used by the Claude consumer apps | 2.1 MB |
-| [anthropics/swift-markdown-ui](https://github.com/anthropics/swift-markdown-ui) | SwiftUI Markdown renderer; the layer above swift-markdown | 47 MB |
-| [anthropics/skills](https://github.com/anthropics/skills) | Source of the `quick_validate.py` and `package_skill.py` tools we use to validate and ship skills | not cloned locally; fetched on demand |
-| [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | 203-entry marketplace.json reference; canonical shape for `subagentskills/.claude-plugin/marketplace.json` | read on demand |
-| [cloudflare/claude-managed-agents](https://github.com/cloudflare/claude-managed-agents) | Reference for managed-agents primitives modeled in `subagentarch` (Agent, Session, Vault, MemoryStore, etc.) | 1.1 GB |
-| [cloudflare/skills](https://github.com/cloudflare/skills) | Cloudflare's own skill catalog; pattern source for our `.claude-plugin/marketplace.json` | 3.6 MB |
-| [cloudflare/miniflare](https://github.com/cloudflare/miniflare) | Reference for local-mode Worker testing patterns | 6.3 MB |
-| [cloudflare/workers-mcp](https://github.com/cloudflare/workers-mcp) | Pattern for hosting an MCP server as a Cloudflare Worker (Streamable HTTP transport) | 812 KB |
-| [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) | Reference MCP server for browser automation | 17 MB |
-| [eyaltoledano/claude-task-master](https://github.com/eyaltoledano/claude-task-master) | Upstream task-master we vendored as `subagenttaskmaster` | vendored, not cloned in workspace |
-| [agentskills.io/specification](https://agentskills.io/specification) | Authoritative spec for SKILL.md frontmatter, `.skill` zip format, marketplace.json | read on demand |
+| [microsoft/vscode](https://github.com/microsoft/vscode) → `extensions/html-language-features/server` | LSP wrapper around the HTML language service | MIT |
+| [microsoft/vscode-html-languageservice](https://github.com/microsoft/vscode-html-languageservice) | The HTML parser + LSP services the wrapper calls | MIT |
+| [anthropics/swift-markdown](https://github.com/anthropics/swift-markdown) | Markdown parser used in claude.ai consumer apps (Anthropic's fork of swiftlang/swift-markdown) | Apache-2.0 |
+| [anthropics/swift-markdown-ui](https://github.com/anthropics/swift-markdown-ui) | SwiftUI Markdown renderer (fork) — what the iOS app uses | MIT |
+| [anthropics/html-effectiveness](https://github.com/anthropics/html-effectiveness) | The 20-file HTML gallery referenced in the Sep 2025 "HTML is unreasonably effective" post | Custom (see repo) |
+| [anthropics/skills](https://github.com/anthropics/skills) | The skill-creator tooling: `quick_validate.py`, `package_skill.py`, the SKILL.md spec | MIT |
+| [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | Marketplace.json shape with SHA-pinned source entries | Apache-2.0 |
+| [cloudflare/claude-managed-agents](https://github.com/cloudflare/claude-managed-agents) | The managed-agents primitives (Session, Vault, Dream, etc) we model in `subagentarch` | Apache-2.0 |
+| [cloudflare/miniflare](https://github.com/cloudflare/miniflare) | Local Workers runtime for testing the `gh-pr-mcp` worker | MIT |
+| [cloudflare/skills](https://github.com/cloudflare/skills) | Cloudflare's published skills — pattern reference | Apache-2.0 |
+| [cloudflare/workers-mcp](https://github.com/cloudflare/workers-mcp) | MCP-over-Workers pattern, basis of `gh-pr-mcp` | Apache-2.0 |
+| [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) | DevTools-protocol MCP server, installed globally in the sandbox | Apache-2.0 |
+| [eyaltoledano/claude-task-master](https://github.com/eyaltoledano/claude-task-master) | Upstream that `subagenttaskmaster` rebrands | MIT |
+| [agentskills.io](https://agentskills.io/specification) | The Agent Skills specification — followed by `subagentskills` and the `ts-bootstrap` skill | (spec, not code) |
 
-## Files we run but do not vendor
+## How to refresh references
 
-- `quick_validate.py`, `package_skill.py` from `anthropics/skills/skill-creator/scripts/` — invoked at CI time or interactively, never committed.
+```bash
+# Read-only mirror into the sandbox for inspection. Never commit these.
+for repo in microsoft/vscode-html-languageservice anthropics/swift-markdown ...; do
+  git clone --depth 1 "https://github.com/$repo" "/home/claude/$(basename $repo)"
+done
+```
 
-## When to update this file
-
-- Whenever a sibling repo starts reading from a new external source — add a row.
-- Whenever an upstream changes shape enough that our reading-from assumptions break — note the breakage and the resolution.
+If an upstream introduces a breaking change that affects a sibling opensubagents/* repo, update the affected repo and bump its submodule SHA here.

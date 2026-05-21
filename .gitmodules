@@ -1,0 +1,32 @@
+[submodule "submodules/ts-bootstrap-mcp"]
+	path = submodules/ts-bootstrap-mcp
+	url = https://github.com/opensubagents/ts-bootstrap-mcp.git
+	branch = main
+[submodule "submodules/subagentskills"]
+	path = submodules/subagentskills
+	url = https://github.com/opensubagents/subagentskills.git
+	branch = main
+[submodule "submodules/subagentarch"]
+	path = submodules/subagentarch
+	url = https://github.com/opensubagents/subagentarch.git
+	branch = main
+[submodule "submodules/subagenttasks"]
+	path = submodules/subagenttasks
+	url = https://github.com/opensubagents/subagenttasks.git
+	branch = main
+[submodule "submodules/subagenttaskmaster"]
+	path = submodules/subagenttaskmaster
+	url = https://github.com/opensubagents/subagenttaskmaster.git
+	branch = main
+[submodule "submodules/subagentbriefs"]
+	path = submodules/subagentbriefs
+	url = https://github.com/opensubagents/subagentbriefs.git
+	branch = main
+[submodule "submodules/subagenthtml"]
+	path = submodules/subagenthtml
+	url = https://github.com/opensubagents/subagenthtml.git
+	branch = main
+[submodule "submodules/subagentlsp"]
+	path = submodules/subagentlsp
+	url = https://github.com/opensubagents/subagentlsp.git
+	branch = main

@@ -1,106 +1,135 @@
-# Architecture — how the 8 repos compose
+# notes/architecture.md
 
-The opensubagents stack is layered by **what is owned where**, not by what runs where. This document maps the ownership boundaries and the data flow that crosses them.
+How the 8 sibling repos wire together. Read after the README; refer to `diagrams/org-overview.html` for the visual version of the same content.
 
-## Layers
-
-```
-Layer 4  PLATFORMS                        subagentplatforms (this repo)
-         ──────────────                    cross-cutting docs, pinned manifest,
-                                           journal, architecture overview
-
-Layer 3  ORCHESTRATION + CATALOGS         subagentskills           ts-bootstrap-mcp
-         ─────────────────────────         marketplace.json,        7 MCP tools,
-                                           paired skill content      streamable HTTP
-                                                                     or stdio
-
-Layer 2  DATA MODELS + REFERENCES         subagenttasks            subagentbriefs
-         ─────────────────────────         schemas/, types/,        PRD, brief shape,
-                                           fixtures/, tests/         first brief,
-                                                                     323p Hamster crawl
-
-                                          subagentarch              subagentlsp
-                                          GraphQL ERD,              vendored MS
-                                          warehouse DDL,             vscode html LSP
-                                          interactive HTML
-
-Layer 1  RENDERING + VENDORING            subagenthtml (private)    subagenttaskmaster
-         ─────────────────────────         fork of anthropics/      vendored
-                                           html-effectiveness        eyaltoledano/
-                                                                     claude-task-master
-```
-
-A change in Layer 2 (e.g., a new field in `subagenttasks/schemas/tasks.schema.json`) propagates upward: Layer 3 catalogs add a validator skill or a new MCP tool, Layer 4 bumps the SHA in `manifest.json` and notes the change in `journal.md`. Layer 1 rarely moves; it's the foundation.
-
-## Data flow during a typical session
+## Three planes
 
 ```
-operator question                       Claude session
-                ↓                              ↓
-      reads subagentplatforms          reads cached skill descriptions
-      to pick the right repo           from /mnt/skills/ + ~/.claude/skills/
-                ↓                              ↓
-                └──────────────┬───────────────┘
-                               ↓
-                  triggers a skill (e.g. ts-bootstrap)
-                               ↓
-                  skill orchestrates MCP plugin tool calls
-                  (ts-bootstrap-mcp's 7 tools)
-                               ↓
-                  plugin shells out to npm/tsc/tsx
-                  in the cloud sandbox
-                               ↓
-                  output flows back through MCP
-                  protocol → skill → session
-                               ↓
-                  on a successful outcome, commits
-                  may be pushed via the gh-pr-mcp worker
-                  to the appropriate sibling repo
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PLANE 1: data model                                                    │
+│  ─ canonical types every other repo agrees on                           │
+│                                                                         │
+│    subagenttasks       Task / Subtask / Tag / ComplexityReport          │
+│    subagentbriefs      Brief / Initiative / Link  (canonical, no fork)  │
+│    subagentarch        GraphQL ERD over all of the above PLUS the       │
+│                        managed-agents runtime primitives                │
+│                        (Session, Agent, Tool, Vault, Dream, ...)        │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              │  consumed by
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PLANE 2: tooling                                                       │
+│  ─ executable code that operates ON the data model                      │
+│                                                                         │
+│    ts-bootstrap-mcp    MCP plugin: scaffold TS projects, install deps,  │
+│                        typecheck, build, clean.                         │
+│                        ↳ pairs with the ts-bootstrap skill in           │
+│                          subagentskills                                 │
+│                                                                         │
+│    subagenttaskmaster  Rebranded fork of eyaltoledano/claude-task-master│
+│                        Consumes subagenttasks schemas.                  │
+│                                                                         │
+│    gh-pr-mcp           Cloudflare Worker, 2 tools: gh_init_repo +       │
+│       (worker)         gh_request. Every push from a sandbox            │
+│                        session goes through here.                       │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              │  authored using
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PLANE 3: authoring & presentation                                      │
+│  ─ how outputs are shaped for humans                                    │
+│                                                                         │
+│    subagenthtml        Private fork of anthropics/html-effectiveness.   │
+│                        The Thariq-format gallery: clickable,            │
+│                        self-contained, CSS-variable-themed HTML.        │
+│                                                                         │
+│    subagentlsp         Vendored microsoft/vscode HTML LSP server +      │
+│                        vscode-html-languageservice. Reference for       │
+│                        what authoring HTML well looks like in an        │
+│                        editor.                                          │
+│                                                                         │
+│    subagentskills      Agent Skills catalog. marketplace.json +         │
+│                        skills/ts-bootstrap/. Five planned skills        │
+│                        (sketches in notes/planned-skills.md).           │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Ownership boundaries
+## Concrete data flows
 
-| Concern | Owner |
-|---|---|
-| Canonical task schema (a `Task` is …) | `subagenttasks` |
-| Canonical brief shape (a `Brief` is …) | `subagentbriefs` |
-| Canonical agent-runtime primitives (Agent, Session, Vault…) | upstream: `cloudflare/claude-managed-agents`; we model in `subagentarch` |
-| Skill format (frontmatter, `.skill` zip) | upstream: agentskills.io; we follow in `subagentskills` |
-| MCP protocol | upstream: `modelcontextprotocol/typescript-sdk`; we implement in `ts-bootstrap-mcp` |
-| Cross-repo notes, journal, manifest | here (`subagentplatforms`) |
+**1. Author a task** →
 
-When upstream churns (e.g., `@modelcontextprotocol/sdk` ships a breaking 2.x), the plugin authors track it in `ts-bootstrap-mcp/VENDORED_FROM.md` and bump the dep in the plugin's own `package.json`. The change ripples to here via a SHA bump in `manifest.json` and a journal entry.
+```
+human writes brief             →  subagentbriefs  ─┐
+brief authored against the     →  subagentarch    ├→  feeds into  →  subagenttaskmaster
+canonical Brief schema in            (ERD says        which uses                ↓
+ERD                                   "Brief points    subagenttasks's       emits tasks.json
+                                      at [Task]")     schemas to validate   that subagenttasks
+                                                                            schemas validate
+```
 
-## What runs where
+**2. Bootstrap a new TS project from a sandbox** →
 
-| Component | Runtime |
-|---|---|
-| MCP plugin (`ts-bootstrap-mcp`) | Node ≥18 in a cloud sandbox (claude.ai web/mobile chat, Claude Code, etc.) over stdio; optionally streamable HTTP on a Cloudflare Worker |
-| `gh-pr-mcp` worker | Cloudflare Worker (long-lived, dual-token model) |
-| Skills | Loaded into the agent's context window by the host (claude.ai loads from `/mnt/skills/`; Claude Code from `~/.claude/skills/`) |
-| Warehouse DDL (`subagentarch/warehouse/`) | AlloyDB or stock Postgres ≥17, currently as-authored — not executed against a live instance yet |
-| Interactive HTML diagrams (`subagentarch/docs/*.html`) | Static, opens in any browser; no server, no JS deps beyond inline |
+```
+operator (in claude.ai session)  →  triggers the ts-bootstrap skill (subagentskills)
+                                  →  which directs ts_env_inspect → ts_project_init
+                                     → ts_install → ts_typecheck → ts_build
+                                  →  served by ts-bootstrap-mcp (the plugin)
+                                  →  scaffolds, say, an mcp-server template
+                                  →  result: dist/index.js, ready for `claude mcp add`
+```
 
-## Future migrations
+**3. Commit anything from a sandbox** →
 
-When the gh-pr-mcp worker token gains `git/trees: write` access to newly-created repos:
+```
+local edits in /home/claude/<repo>/  →  gh-pr-mcp worker  →  GitHub Git Data API
+                                         (the only path,        (Trees on existing
+                                          since sandbox can      repos, Contents API
+                                          not git push directly) on new repos)
+```
 
-1. Replace `manifest.json` with `.gitmodules`. The submodule entries need `160000` tree mode, which only the Trees API can write.
-2. Add `.github/workflows/validate-frontmatter.yml` and `validate-marketplace.yml` to `subagentskills` (currently provided as downloadable artifacts but not committed).
-3. Re-push `skills/ts-bootstrap/scripts/{check,install}.sh` with mode `100755` via the Trees API — currently `100644` due to Contents API limitation.
+## Where each entity lives
 
-When publishing to npm becomes appropriate:
+Drawn from `subagentarch/schema/architecture.graphql`:
 
-1. `ts-bootstrap-mcp` → `@opensubagents/ts-bootstrap-mcp` (requires npm org claim).
-2. `subagenttasks` → `@opensubagents/subagenttasks`.
+| Entity | Defined in | Lives in (runtime) | Consumed by |
+|---|---|---|---|
+| `Task`, `Subtask`, `Tag` | `subagenttasks` schema | tasks.json file or a managed-agents `MemoryStore` | `subagenttaskmaster`, agents driving multi-step work |
+| `Brief`, `Initiative` | `subagentbriefs` chassis | Markdown files in a project | `subagenttasks` (briefs emit tasks) |
+| `Agent`, `Session`, `Tool`, `Skill`, `Vault`, `MemoryStore`, `PermissionPolicy`, `Environment`, `Webhook`, `Dream` | `subagentarch` ERD (mirrors cloudflare/claude-managed-agents) | Managed-agents runtime on `platform.claude.com` | Any host that talks to managed-agents |
+| `FeatureFlag` (planned) | `subagentarch` cross-cutting | Cloudflare KV (subagentflags, not yet built) | All sessions |
+| `Trace`, `Span` (planned) | `subagentarch` cross-cutting | CF Analytics via OTel (subagentobs, not yet built) | Observability stack |
 
-Neither is blocking today; `npx -y github:opensubagents/...` covers consumption in cloud sandboxes.
+## What the `gh-pr-mcp` worker actually does
 
-## Cross-cutting packages still in design
+```
+POST https://gh-pr-mcp.alex-e62.workers.dev/mcp
+  JSON-RPC method: tools/call
+  with one of two tools:
 
-Listed in `subagentarch/schema/architecture.graphql` as G4 entities but not yet shipped:
+    gh_init_repo(owner, name, description, private, auto_init)
+       → creates a new repo under github.com/<owner>
 
-- **subagentflags** — OpenFeature flags backed by Cloudflare KV. Adds `FeatureFlag`, `FlagVariant`, `Targeting` to the ERD.
-- **subagentobs** — OpenTelemetry tracing with `gen_ai.*` semconv attributes, sunk into Cloudflare Analytics. Adds `Trace`, `Span` to the ERD.
+    gh_request(method, path, body?)
+       → arbitrary GitHub REST call, scoped by the worker's token
 
-These are placeholders in the schema until a real consumer exists.
+  Worker holds a fine-grained PAT in secret binding. Token has:
+    ✓ contents: write
+    ✗ workflows: write              (blocks .github/workflows/*.yml writes)
+    ⚠️ /git/trees write only on     (works on ts-bootstrap-mcp; 403 on
+       SOME repos                    fresh subagentskills + subagentplatforms)
+    ⚠️ path-substring blocklist on  (blocks `references/workflows.md`)
+       "workflows"
+```
+
+This is why the bootstrap of every repo in this org so far has happened via Contents API single-file PUTs rather than atomic Trees commits.
+
+## Cross-cutting deferred packages
+
+Both referenced in `subagentarch` ERD as planned, both no repo yet:
+
+- **`subagentflags`** — OpenFeature spec on Cloudflare KV. `FeatureFlag { key, variants[], defaultVariant, targeting }` per the ERD.
+- **`subagentobs`** — OpenTelemetry traces with `gen_ai.*` semconv attributes, sink to CF Analytics. `Trace { traceId, session, spans[] }`, `Span { spanId, parentSpanId, name, startTs, endTs, attributes }`.
+
+When either gets a real consumer, spin the repo, add a submodule entry here, and update the ERD.

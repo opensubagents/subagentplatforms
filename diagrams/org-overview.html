@@ -3,250 +3,275 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>opensubagents — repo map</title>
+<title>opensubagents — org overview</title>
 <style>
   :root {
-    --ivory: #FAF9F5;
-    --slate: #141413;
-    --clay: #D97757;
-    --oat: #E3DACC;
-    --olive: #788C5D;
-    --rust: #B04A3F;
-    --indigo: #4F5D8A;
-    --gray-150: #F0EEE6;
-    --gray-300: #D1CFC5;
-    --gray-500: #87867F;
-    --gray-700: #3D3D3A;
+    --ivory:#FAF9F5; --slate:#141413; --clay:#D97757; --oat:#E3DACC;
+    --olive:#788C5D; --rust:#B04A3F; --indigo:#4F5D8A;
+    --gray-150:#F0EEE6; --gray-300:#D1CFC5; --gray-500:#87867F; --gray-700:#3D3D3A;
     --serif: ui-serif, Georgia, "Times New Roman", serif;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--ivory); color: var(--slate); font-family: var(--sans); -webkit-font-smoothing: antialiased; padding: 48px 24px 80px; }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { background: var(--ivory); color: var(--slate); font-family: var(--sans); padding: 48px 20px 80px; }
   .sheet { max-width: 1100px; margin: 0 auto; }
-  header { margin-bottom: 32px; }
   .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 10px; }
-  h1 { font-family: var(--serif); font-weight: 500; font-size: 32px; letter-spacing: -0.01em; margin-bottom: 10px; }
-  .lead { font-size: 14px; line-height: 1.6; color: var(--gray-700); max-width: 720px; }
-  .lead code { font-family: var(--mono); font-size: 12.5px; background: var(--gray-150); padding: 1px 5px; border-radius: 3px; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 32px; letter-spacing: -0.01em; margin-bottom: 12px; }
+  .lead { font-size: 14.5px; line-height: 1.6; color: var(--gray-700); max-width: 720px; margin-bottom: 28px; }
+  .lead code { font-family: var(--mono); font-size: 13px; background: var(--gray-150); padding: 1px 5px; border-radius: 3px; }
 
-  .canvas { border: 1.5px solid var(--gray-300); border-radius: 14px; background: #fff; padding: 24px; overflow-x: auto; margin-top: 24px; }
-  svg.map { display: block; width: 100%; height: auto; }
-  .map text { font-family: var(--mono); font-size: 11px; fill: var(--slate); pointer-events: none; }
-  .map .title { font-size: 12.5px; font-weight: 600; }
-  .map .pkg { font-size: 9px; fill: var(--gray-500); letter-spacing: 0.05em; text-transform: uppercase; }
-  .map .role { font-size: 10px; fill: var(--gray-700); }
-  .map .sha { font-size: 9.5px; fill: var(--gray-500); }
+  .layout { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 
-  .entity rect { fill: #fff; stroke: var(--gray-300); stroke-width: 1.5; rx: 8; transition: stroke 120ms ease; }
-  .entity.l1 rect { fill: rgba(120,140,93,0.05); stroke: var(--olive); }
-  .entity.l2 rect { fill: rgba(217,119,87,0.04); stroke: var(--clay); }
-  .entity.l3 rect { fill: rgba(79,93,138,0.05); stroke: var(--indigo); }
-  .entity.l4 rect { fill: rgba(176,74,63,0.04); stroke: var(--rust); }
-  .entity.ext rect { fill: var(--gray-150); stroke-dasharray: 3 3; }
+  .canvas { border: 1.5px solid var(--gray-300); border-radius: 14px; background: #fff; padding: 22px; overflow-x: auto; }
+  svg.diag { display: block; width: 100%; height: auto; }
+  .diag text { font-family: var(--mono); font-size: 11px; fill: var(--slate); pointer-events: none; }
+  .diag .title { font-size: 12px; font-weight: 600; }
+  .diag .meta  { font-size: 9.5px; fill: var(--gray-500); }
+  .diag .sha   { font-size: 9px; fill: var(--gray-500); font-family: var(--mono); }
+  .diag .plane-label { font-family: var(--serif); font-size: 14px; fill: var(--gray-500); letter-spacing: 0.04em; }
 
-  .entity .header-bar { fill: var(--gray-150); }
-  .entity.l1 .header-bar { fill: rgba(120,140,93,0.16); }
-  .entity.l2 .header-bar { fill: rgba(217,119,87,0.16); }
-  .entity.l3 .header-bar { fill: rgba(79,93,138,0.18); }
-  .entity.l4 .header-bar { fill: rgba(176,74,63,0.14); }
-  .entity.ext .header-bar { fill: var(--gray-150); }
-
-  .entity { cursor: pointer; }
-  .entity:hover rect { stroke-width: 2.5; }
-  .entity.active rect { stroke-width: 2.5; stroke: var(--clay); }
-  .entity.dimmed { opacity: 0.25; }
+  .node rect { fill: #fff; stroke: var(--gray-300); stroke-width: 1.5; rx: 8; transition: stroke 120ms ease; }
+  .node { cursor: pointer; }
+  .node:hover rect { stroke-width: 2.5; }
+  .node.active rect { stroke-width: 2.5; stroke: var(--clay); }
+  .node.dimmed { opacity: 0.22; }
+  .node.data    rect { fill: rgba(217,119,87,0.05); stroke: var(--clay); }
+  .node.tool    rect { fill: rgba(120,140,93,0.05); stroke: var(--olive); }
+  .node.present rect { fill: rgba(79,93,138,0.05); stroke: var(--indigo); }
+  .node.worker  rect { fill: rgba(176,74,63,0.05); stroke: var(--rust); }
+  .node.meta    rect { fill: var(--gray-150); }
+  .header-bar { fill: var(--gray-150); }
+  .node.data    .header-bar { fill: rgba(217,119,87,0.16); }
+  .node.tool    .header-bar { fill: rgba(120,140,93,0.16); }
+  .node.present .header-bar { fill: rgba(79,93,138,0.18); }
+  .node.worker  .header-bar { fill: rgba(176,74,63,0.14); }
+  .node.meta    .header-bar { fill: var(--gray-300); }
 
   .edge { fill: none; stroke: var(--gray-500); stroke-width: 1.2; marker-end: url(#arrow); transition: stroke 120ms ease, opacity 120ms ease; }
-  .edge.dep { stroke-dasharray: 5 3; }
+  .edge.flow { stroke-dasharray: 5 3; }
   .edge.dimmed { opacity: 0.15; }
   .edge.active { stroke: var(--clay); stroke-width: 2; }
   .edge-label { font-family: var(--mono); font-size: 9.5px; fill: var(--gray-500); pointer-events: none; }
 
-  aside { background: #fff; border: 1.5px solid var(--gray-300); border-radius: 14px; padding: 22px; margin-top: 24px; font-size: 13px; line-height: 1.55; color: var(--gray-700); }
-  aside h3 { font-family: var(--serif); font-weight: 500; font-size: 16px; color: var(--slate); margin-bottom: 8px; }
+  aside { position: sticky; top: 24px; background: #fff; border: 1.5px solid var(--gray-300); border-radius: 14px; padding: 20px 20px 16px; font-size: 13px; line-height: 1.55; color: var(--gray-700); }
+  aside h3 { font-family: var(--serif); font-weight: 500; font-size: 17px; color: var(--slate); margin-bottom: 10px; }
   aside .meta { font-family: var(--mono); font-size: 10.5px; color: var(--gray-500); margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
-  aside h4 { font-size: 11.5px; font-family: var(--mono); color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 14px; margin-bottom: 6px; }
+  aside h4 { font-size: 12px; font-family: var(--mono); color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 14px; margin-bottom: 6px; }
   aside ul { list-style: none; padding: 0; }
   aside li { padding: 3px 0; font-family: var(--mono); font-size: 11.5px; color: var(--slate); }
-  aside .reset { display: inline-block; margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--clay); cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+  aside a { color: var(--clay); text-decoration: none; border-bottom: 1px dotted var(--clay); }
+  aside .reset { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--clay); cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
 
-  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 18px; padding: 14px 16px; border: 1px solid var(--gray-300); border-radius: 10px; background: #fff; }
-  .legend .item { display: flex; align-items: center; gap: 10px; font-size: 11.5px; font-family: var(--mono); color: var(--gray-700); }
-  .legend .swatch { width: 20px; height: 12px; border-radius: 3px; border: 1.5px solid; flex-shrink: 0; }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 22px; padding: 16px; border: 1px solid var(--gray-300); border-radius: 10px; background: #fff; }
+  .legend .item { display: flex; align-items: center; gap: 9px; font-size: 12px; font-family: var(--mono); color: var(--gray-700); }
+  .legend .swatch { width: 22px; height: 13px; border-radius: 3px; border: 1.5px solid; flex-shrink: 0; }
+  .footnote { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--gray-300); font-size: 12.5px; color: var(--gray-500); font-family: var(--mono); line-height: 1.7; }
 </style>
 </head>
 <body>
 <div class="sheet">
+
   <header>
-    <div class="eyebrow">opensubagents · subagentplatforms · 2026-05-21</div>
-    <h1>Repo map</h1>
+    <div class="eyebrow">opensubagents · org overview · 2026-05-21</div>
+    <h1>The 8 sibling repos, one map</h1>
     <p class="lead">
-      The eight sibling repos in the <code>opensubagents</code> stack, plus the external <code>gh-pr-mcp</code> worker, arranged by ownership layer. Layer 1 is the foundation (vendored code), Layer 4 is composition (this repo). Click any box to highlight only its direct relationships.
+      Three planes: <strong>data model</strong> (clay), <strong>tooling</strong> (olive), and <strong>authoring &amp; presentation</strong> (indigo).
+      Plus the <code>gh-pr-mcp</code> worker (rust) that every push from a sandbox goes through, and this meta-repo (gray).
+      Click any box to see what it points at and what points back at it.
     </p>
   </header>
 
-  <div class="canvas">
-    <svg class="map" viewBox="0 0 1060 760" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M0,0 L10,5 L0,10 L2.5,5 z" fill="#87867F"/>
-        </marker>
-      </defs>
+  <div class="layout">
+    <div class="canvas">
+      <svg class="diag" viewBox="0 0 1080 720" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 L2.5,5 z" fill="#87867F"/>
+          </marker>
+        </defs>
 
-      <!-- LAYER 4: this repo -->
-      <g class="entity l4" data-id="subagentplatforms" transform="translate(380, 30)">
-        <rect width="280" height="80"/>
-        <rect class="header-bar" width="280" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="280" height="8"/>
-        <text class="title" x="14" y="16">subagentplatforms</text>
-        <text class="pkg" x="14" y="36">L4 · this repo</text>
-        <text class="role" x="14" y="52">workspace meta-repo</text>
-        <text class="role" x="14" y="66">manifest + journal + arch + diagrams</text>
-      </g>
+        <!-- plane labels -->
+        <text class="plane-label" x="20" y="40">DATA MODEL</text>
+        <text class="plane-label" x="20" y="260">TOOLING</text>
+        <text class="plane-label" x="20" y="480">AUTHORING &amp; PRESENTATION</text>
 
-      <!-- LAYER 3: orchestration + catalogs -->
-      <g class="entity l3" data-id="subagentskills" transform="translate(170, 170)">
-        <rect width="240" height="76"/>
-        <rect class="header-bar" width="240" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="240" height="8"/>
-        <text class="title" x="14" y="16">subagentskills</text>
-        <text class="pkg" x="14" y="36">L3 · catalog</text>
-        <text class="role" x="14" y="52">marketplace.json + skills/</text>
-        <text class="sha" x="14" y="66">@ 17557d5f · 1 released, 5 planned</text>
-      </g>
+        <!-- DATA MODEL PLANE -->
+        <g class="node data" data-id="subagenttasks" transform="translate(40, 60)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagenttasks</text>
+          <text class="meta"  x="14" y="38">Zod → JSON Schema → TS types</text>
+          <text class="meta"  x="14" y="52">+ fixtures + 4 outcome tests</text>
+          <text class="sha"   x="14" y="68">@ ab329d2c</text>
+        </g>
+        <g class="node data" data-id="subagentbriefs" transform="translate(310, 60)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagentbriefs</text>
+          <text class="meta"  x="14" y="38">Brief / Initiative / Link</text>
+          <text class="meta"  x="14" y="52">+ 323-page Hamster crawl</text>
+          <text class="sha"   x="14" y="68">@ b538d087</text>
+        </g>
+        <g class="node data" data-id="subagentarch" transform="translate(580, 60)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagentarch</text>
+          <text class="meta"  x="14" y="38">canonical GraphQL ERD</text>
+          <text class="meta"  x="14" y="52">+ Kimball warehouse DDL</text>
+          <text class="sha"   x="14" y="68">@ 15228221</text>
+        </g>
 
-      <g class="entity l3" data-id="ts-bootstrap-mcp" transform="translate(640, 170)">
-        <rect width="240" height="76"/>
-        <rect class="header-bar" width="240" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="240" height="8"/>
-        <text class="title" x="14" y="16">ts-bootstrap-mcp</text>
-        <text class="pkg" x="14" y="36">L3 · MCP plugin</text>
-        <text class="role" x="14" y="52">7 tools: env/init/install/typecheck/run/build/clean</text>
-        <text class="sha" x="14" y="66">@ db22b540 · ships paired skill</text>
-      </g>
+        <!-- TOOLING PLANE -->
+        <g class="node tool" data-id="ts-bootstrap-mcp" transform="translate(40, 280)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">ts-bootstrap-mcp</text>
+          <text class="meta"  x="14" y="38">MCP plugin: 7 tools</text>
+          <text class="meta"  x="14" y="52">scaffold + install + build TS</text>
+          <text class="sha"   x="14" y="68">@ db22b540</text>
+        </g>
+        <g class="node tool" data-id="subagenttaskmaster" transform="translate(310, 280)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagenttaskmaster</text>
+          <text class="meta"  x="14" y="38">rebranded task-master-ai</text>
+          <text class="meta"  x="14" y="52">@opensubagents/task-master-ai</text>
+          <text class="sha"   x="14" y="68">@ 6a9c632a</text>
+        </g>
 
-      <!-- LAYER 2: data models + references -->
-      <g class="entity l2" data-id="subagenttasks" transform="translate(40, 310)">
-        <rect width="200" height="76"/>
-        <rect class="header-bar" width="200" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="200" height="8"/>
-        <text class="title" x="14" y="16">subagenttasks</text>
-        <text class="pkg" x="14" y="36">L2 · data model</text>
-        <text class="role" x="14" y="52">Zod + JSON Schema + types</text>
-        <text class="sha" x="14" y="66">@ ab329d2c</text>
-      </g>
+        <!-- WORKER -->
+        <g class="node worker" data-id="gh-pr-mcp" transform="translate(580, 280)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">gh-pr-mcp · worker</text>
+          <text class="meta"  x="14" y="38">2 tools: gh_init_repo, gh_request</text>
+          <text class="meta"  x="14" y="52">Cloudflare Workers</text>
+          <text class="sha"   x="14" y="68">v0.4.1 (gh-pr-mcp.alex-e62.workers.dev)</text>
+        </g>
 
-      <g class="entity l2" data-id="subagentbriefs" transform="translate(270, 310)">
-        <rect width="200" height="76"/>
-        <rect class="header-bar" width="200" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="200" height="8"/>
-        <text class="title" x="14" y="16">subagentbriefs</text>
-        <text class="pkg" x="14" y="36">L2 · data model</text>
-        <text class="role" x="14" y="52">PRD + brief shape + 1 brief</text>
-        <text class="sha" x="14" y="66">@ b538d087</text>
-      </g>
+        <!-- PRESENTATION PLANE -->
+        <g class="node present" data-id="subagenthtml" transform="translate(40, 500)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagenthtml</text>
+          <text class="meta"  x="14" y="38">private fork of</text>
+          <text class="meta"  x="14" y="52">anthropics/html-effectiveness</text>
+          <text class="sha"   x="14" y="68">@ 58c305be</text>
+        </g>
+        <g class="node present" data-id="subagentlsp" transform="translate(310, 500)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagentlsp</text>
+          <text class="meta"  x="14" y="38">vendored vscode HTML LSP</text>
+          <text class="meta"  x="14" y="52">+ vscode-html-languageservice</text>
+          <text class="sha"   x="14" y="68">@ fd99391f</text>
+        </g>
+        <g class="node present" data-id="subagentskills" transform="translate(580, 500)">
+          <rect width="240" height="80"/>
+          <rect class="header-bar" width="240" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="240" height="8"/>
+          <text class="title" x="14" y="16">subagentskills</text>
+          <text class="meta"  x="14" y="38">Agent Skills catalog</text>
+          <text class="meta"  x="14" y="52">marketplace.json + skills/</text>
+          <text class="sha"   x="14" y="68">@ 17557d5f</text>
+        </g>
 
-      <g class="entity l2" data-id="subagentarch" transform="translate(500, 310)">
-        <rect width="220" height="76"/>
-        <rect class="header-bar" width="220" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="220" height="8"/>
-        <text class="title" x="14" y="16">subagentarch</text>
-        <text class="pkg" x="14" y="36">L2 · references</text>
-        <text class="role" x="14" y="52">GraphQL ERD + warehouse DDL + HTML</text>
-        <text class="sha" x="14" y="66">@ 15228221</text>
-      </g>
+        <!-- META REPO (this one) -->
+        <g class="node meta" data-id="subagentplatforms" transform="translate(850, 280)">
+          <rect width="200" height="80"/>
+          <rect class="header-bar" width="200" height="22" rx="8"/>
+          <rect class="header-bar" y="14" width="200" height="8"/>
+          <text class="title" x="14" y="16">subagentplatforms</text>
+          <text class="meta"  x="14" y="38">this meta-repo</text>
+          <text class="meta"  x="14" y="52">submodules + notes</text>
+          <text class="sha"   x="14" y="68">@ bootstrap</text>
+        </g>
 
-      <g class="entity l2" data-id="subagentlsp" transform="translate(750, 310)">
-        <rect width="200" height="76"/>
-        <rect class="header-bar" width="200" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="200" height="8"/>
-        <text class="title" x="14" y="16">subagentlsp</text>
-        <text class="pkg" x="14" y="36">L2 · vendored</text>
-        <text class="role" x="14" y="52">vscode html-language-server</text>
-        <text class="sha" x="14" y="66">@ fd99391f</text>
-      </g>
+        <!-- EDGES (data → consumed-by relationships and flow lines) -->
+        <!-- subagentbriefs → subagenttasks  (briefs emit tasks) -->
+        <path class="edge" data-from="subagentbriefs" data-to="subagenttasks" d="M 310,100 Q 295,100 280,100"/>
+        <text class="edge-label" x="285" y="94">emits tasks</text>
 
-      <!-- LAYER 1: rendering + vendoring -->
-      <g class="entity l1" data-id="subagenthtml" transform="translate(170, 460)">
-        <rect width="220" height="76"/>
-        <rect class="header-bar" width="220" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="220" height="8"/>
-        <text class="title" x="14" y="16">subagenthtml (private)</text>
-        <text class="pkg" x="14" y="36">L1 · fork</text>
-        <text class="role" x="14" y="52">anthropics/html-effectiveness</text>
-        <text class="sha" x="14" y="66">@ 58c305be</text>
-      </g>
+        <!-- subagentarch → subagenttasks  (arch models tasks data) -->
+        <path class="edge" data-from="subagentarch" data-to="subagenttasks" d="M 580,90 Q 430,140 280,110"/>
+        <text class="edge-label" x="430" y="135">models</text>
 
-      <g class="entity l1" data-id="subagenttaskmaster" transform="translate(640, 460)">
-        <rect width="240" height="76"/>
-        <rect class="header-bar" width="240" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="240" height="8"/>
-        <text class="title" x="14" y="16">subagenttaskmaster</text>
-        <text class="pkg" x="14" y="36">L1 · vendored</text>
-        <text class="role" x="14" y="52">eyaltoledano/claude-task-master + rebrand</text>
-        <text class="sha" x="14" y="66">@ 6a9c632a</text>
-      </g>
+        <!-- subagentarch → subagentbriefs  (arch models briefs data) -->
+        <path class="edge" data-from="subagentarch" data-to="subagentbriefs" d="M 580,115 Q 555,115 550,115"/>
+        <text class="edge-label" x="555" y="109">models</text>
 
-      <!-- EXTERNAL: gh-pr-mcp -->
-      <g class="entity ext" data-id="gh-pr-mcp" transform="translate(380, 620)">
-        <rect width="280" height="76"/>
-        <rect class="header-bar" width="280" height="22" rx="8"/>
-        <rect class="header-bar" y="14" width="280" height="8"/>
-        <text class="title" x="14" y="16">gh-pr-mcp (Cloudflare Worker)</text>
-        <text class="pkg" x="14" y="36">external · push gateway</text>
-        <text class="role" x="14" y="52">dual-token model; gh_init_repo, gh_request</text>
-        <text class="sha" x="14" y="66">v0.4.1 · not in opensubagents/*</text>
-      </g>
+        <!-- subagenttaskmaster → subagenttasks  (tooling uses schemas) -->
+        <path class="edge" data-from="subagenttaskmaster" data-to="subagenttasks" d="M 310,300 Q 220,250 160,140"/>
+        <text class="edge-label" x="195" y="225">uses schemas</text>
 
-      <!-- EDGES: meta-repo pins everyone (manifest entries) -->
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagentskills"     d="M 420,110 Q 360,140 290,170"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="ts-bootstrap-mcp"   d="M 620,110 Q 690,140 760,170"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagenttasks"      d="M 420,110 Q 250,200 140,310"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagentbriefs"     d="M 470,110 Q 380,200 370,310"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagentarch"       d="M 540,110 Q 580,200 610,310"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagentlsp"        d="M 600,110 Q 770,200 850,310"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagenthtml"       d="M 430,110 Q 280,300 280,460"/>
-      <path class="edge dep" data-from="subagentplatforms" data-to="subagenttaskmaster" d="M 600,110 Q 780,300 760,460"/>
+        <!-- ts-bootstrap-mcp → subagentskills  (plugin paired with skill) -->
+        <path class="edge flow" data-from="ts-bootstrap-mcp" data-to="subagentskills" d="M 160,360 Q 380,440 700,500"/>
+        <text class="edge-label" x="390" y="445">paired-with skill</text>
 
-      <!-- intra-stack relationships -->
-      <path class="edge" data-from="subagentskills" data-to="ts-bootstrap-mcp" d="M 410,208 Q 525,208 640,208"/>
-      <text class="edge-label" x="475" y="202">ships paired skill</text>
+        <!-- every repo flows through worker -->
+        <path class="edge flow" data-from="subagenttasks" data-to="gh-pr-mcp" d="M 160,140 Q 380,210 600,280"/>
+        <text class="edge-label" x="380" y="205">pushes via</text>
+        <path class="edge flow" data-from="subagentbriefs" data-to="gh-pr-mcp" d="M 430,140 Q 510,210 620,280"/>
+        <path class="edge flow" data-from="subagentarch" data-to="gh-pr-mcp" d="M 700,140 Q 700,210 700,280"/>
+        <path class="edge flow" data-from="subagenttaskmaster" data-to="gh-pr-mcp" d="M 430,360 Q 510,330 600,310"/>
+        <path class="edge flow" data-from="ts-bootstrap-mcp" data-to="gh-pr-mcp" d="M 280,310 Q 430,310 580,310"/>
+        <path class="edge flow" data-from="subagenthtml" data-to="gh-pr-mcp" d="M 160,500 Q 380,420 600,360"/>
+        <path class="edge flow" data-from="subagentlsp" data-to="gh-pr-mcp" d="M 430,500 Q 510,430 620,360"/>
+        <path class="edge flow" data-from="subagentskills" data-to="gh-pr-mcp" d="M 700,500 Q 700,420 700,360"/>
 
-      <path class="edge" data-from="ts-bootstrap-mcp" data-to="subagenttaskmaster" d="M 760,246 Q 760,360 760,460"/>
-      <text class="edge-label" x="764" y="355">templates inspired by</text>
+        <!-- meta-repo submodules all 8 -->
+        <path class="edge" data-from="subagentplatforms" data-to="subagenttasks" d="M 850,300 Q 600,200 160,110"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagentbriefs" d="M 850,310 Q 600,210 430,110"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagentarch" d="M 850,320 Q 800,210 700,110"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagenttaskmaster" d="M 850,330 Q 640,340 550,310"/>
+        <path class="edge" data-from="subagentplatforms" data-to="ts-bootstrap-mcp" d="M 850,340 Q 460,340 280,320"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagenthtml" d="M 850,350 Q 460,500 160,540"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagentlsp" d="M 855,355 Q 560,560 430,540"/>
+        <path class="edge" data-from="subagentplatforms" data-to="subagentskills" d="M 855,360 Q 760,460 700,500"/>
+        <text class="edge-label" x="860" y="375">submodules</text>
 
-      <path class="edge" data-from="subagentarch" data-to="subagenttasks" d="M 500,348 Q 370,348 240,348"/>
-      <text class="edge-label" x="345" y="344">models the Task shape</text>
+      </svg>
+    </div>
 
-      <path class="edge" data-from="subagentarch" data-to="subagentbriefs" d="M 540,386 Q 470,400 410,386"/>
-      <text class="edge-label" x="450" y="408">models the Brief shape</text>
-
-      <path class="edge" data-from="subagentlsp" data-to="subagenthtml" d="M 850,386 Q 600,420 390,460"/>
-      <text class="edge-label" x="600" y="416">LSP for authoring HTML</text>
-
-      <!-- gh-pr-mcp pushes to everyone -->
-      <path class="edge dep" data-from="gh-pr-mcp" data-to="subagenthtml"        d="M 410,620 Q 320,560 280,536"/>
-      <path class="edge dep" data-from="gh-pr-mcp" data-to="subagenttaskmaster"  d="M 620,620 Q 700,560 760,536"/>
-      <path class="edge dep" data-from="gh-pr-mcp" data-to="subagentplatforms"   d="M 520,620 Q 520,400 520,110"/>
-      <text class="edge-label" x="525" y="380">pushes commits to all</text>
-    </svg>
+    <aside id="panel">
+      <div class="meta">click a repo</div>
+      <h3>About this map</h3>
+      <p>Three planes, plus a worker that every push goes through, plus this meta-repo at the center pinning the rest as submodules.</p>
+      <h4>Planes</h4>
+      <ul>
+        <li><span style="color:var(--clay)">●</span> data model</li>
+        <li><span style="color:var(--olive)">●</span> tooling</li>
+        <li><span style="color:var(--indigo)">●</span> authoring &amp; presentation</li>
+        <li><span style="color:var(--rust)">●</span> worker</li>
+        <li><span style="color:var(--gray-500)">●</span> this meta-repo</li>
+      </ul>
+    </aside>
   </div>
 
   <div class="legend">
-    <div class="item"><span class="swatch" style="background:rgba(176,74,63,0.14); border-color:var(--rust)"></span> Layer 4 — meta</div>
-    <div class="item"><span class="swatch" style="background:rgba(79,93,138,0.18); border-color:var(--indigo)"></span> Layer 3 — orchestration</div>
-    <div class="item"><span class="swatch" style="background:rgba(217,119,87,0.16); border-color:var(--clay)"></span> Layer 2 — data + reference</div>
-    <div class="item"><span class="swatch" style="background:rgba(120,140,93,0.16); border-color:var(--olive)"></span> Layer 1 — vendoring</div>
-    <div class="item"><span class="swatch" style="background:var(--gray-150); border-color:var(--gray-500); border-style:dashed"></span> External worker</div>
-    <div class="item"><span class="swatch" style="background:transparent; border:none; border-top:1.5px dashed var(--gray-500); border-radius:0; height:1px;"></span> manifest pin</div>
+    <div class="item"><span class="swatch" style="background:rgba(217,119,87,0.16); border-color:var(--clay)"></span> data model</div>
+    <div class="item"><span class="swatch" style="background:rgba(120,140,93,0.16); border-color:var(--olive)"></span> tooling</div>
+    <div class="item"><span class="swatch" style="background:rgba(79,93,138,0.18); border-color:var(--indigo)"></span> authoring &amp; presentation</div>
+    <div class="item"><span class="swatch" style="background:rgba(176,74,63,0.14); border-color:var(--rust)"></span> worker (gh-pr-mcp)</div>
+    <div class="item"><span class="swatch" style="background:var(--gray-150); border-color:var(--gray-300)"></span> meta-repo (this)</div>
+    <div class="item"><span class="swatch" style="background:transparent; border:none; border-top:1.5px dashed var(--gray-500); border-radius:0; height:1px;"></span> flow / submodule edge</div>
   </div>
 
-  <aside id="panel">
-    <div class="meta">click an entity</div>
-    <h3>About this map</h3>
-    <p>Click any repo to see its direct relationships in the stack. The dashed edges are <code>manifest.json</code> pins (this repo references all eight at specific SHAs). Solid edges are semantic relationships: which repo ships which skill, which schema models which shape, etc.</p>
-  </aside>
+  <div class="footnote">
+    <strong>Source of truth:</strong> the <code>.gitmodules</code> + the per-sibling SHAs in <code>README.md</code> of this repo.<br>
+    <strong>Generated from:</strong> hand-authored, 2026-05-21. To regenerate from data, see the planned <code>graphql-erd-from-zod</code> skill in <code>notes/planned-skills.md</code>.
+  </div>
+
 </div>
 
 <script>
@@ -258,44 +283,63 @@
     (adj[f] = adj[f] || new Set()).add(t);
     (adj[t] = adj[t] || new Set()).add(f);
   });
-  const entities = Array.from(document.querySelectorAll('.entity'));
+  const nodes = Array.from(document.querySelectorAll('.node'));
   const panel = document.getElementById('panel');
 
   function reset() {
-    entities.forEach(n => n.classList.remove('active', 'dimmed'));
-    edges.forEach(e => e.classList.remove('active', 'dimmed'));
-    panel.innerHTML = '<div class="meta">click an entity</div><h3>About this map</h3><p>Click any repo to see its direct relationships in the stack.</p>';
+    nodes.forEach(n => { n.classList.remove('active','dimmed'); });
+    edges.forEach(e => e.classList.remove('active','dimmed'));
+    panel.innerHTML = `
+      <div class="meta">click a repo</div>
+      <h3>About this map</h3>
+      <p>Three planes, plus a worker that every push goes through, plus this meta-repo at the center pinning the rest as submodules.</p>
+      <h4>Planes</h4>
+      <ul>
+        <li><span style="color:var(--clay)">●</span> data model</li>
+        <li><span style="color:var(--olive)">●</span> tooling</li>
+        <li><span style="color:var(--indigo)">●</span> authoring &amp; presentation</li>
+        <li><span style="color:var(--rust)">●</span> worker</li>
+        <li><span style="color:var(--gray-500)">●</span> this meta-repo</li>
+      </ul>
+    `;
   }
 
   function focus(id) {
     const neighbors = adj[id] || new Set();
-    entities.forEach(n => {
+    nodes.forEach(n => {
       const nid = n.dataset.id;
       if (nid === id) n.classList.add('active');
-      else if (neighbors.has(nid)) n.classList.remove('dimmed');
-      else n.classList.add('dimmed');
+      else if (neighbors.has(nid)) { n.classList.remove('dimmed'); n.classList.remove('active'); }
+      else { n.classList.add('dimmed'); n.classList.remove('active'); }
     });
     edges.forEach(e => {
       if (e.dataset.from === id || e.dataset.to === id) { e.classList.add('active'); e.classList.remove('dimmed'); }
       else { e.classList.add('dimmed'); e.classList.remove('active'); }
     });
-    const ent = document.querySelector(`.entity[data-id="${id}"]`);
-    const role = ent?.querySelector('.role')?.textContent || '';
-    const sha  = ent?.querySelector('.sha')?.textContent || '';
+
+    const titleEl = document.querySelector(`.node[data-id="${id}"] .title`);
+    const title = titleEl ? titleEl.textContent : id;
     const inb = edges.filter(e => e.dataset.to === id).map(e => e.dataset.from);
     const out = edges.filter(e => e.dataset.from === id).map(e => e.dataset.to);
+    const link = id === 'gh-pr-mcp'
+      ? 'https://gh-pr-mcp.alex-e62.workers.dev/'
+      : id === 'subagentplatforms'
+        ? 'https://github.com/opensubagents/subagentplatforms'
+        : `https://github.com/opensubagents/${id}`;
+
     panel.innerHTML = `
-      <div class="meta">${id}</div>
-      <h3>${id}</h3>
-      <p>${role}</p>
-      <p style="font-family:var(--mono); font-size:11.5px; color:var(--gray-500)">${sha}</p>
+      <div class="meta">repo</div>
+      <h3>${title}</h3>
+      <p><a href="${link}" target="_blank">${link.replace('https://','')}</a></p>
       ${out.length ? `<h4>Points at</h4><ul>${out.map(o => `<li>${o}</li>`).join('')}</ul>` : ''}
       ${inb.length ? `<h4>Pointed at by</h4><ul>${inb.map(i => `<li>${i}</li>`).join('')}</ul>` : ''}
-      <span class="reset" onclick="reset()">↺ clear</span>
+      <span class="reset" onclick="reset()">↺ clear selection</span>
     `;
   }
 
-  entities.forEach(n => n.addEventListener('click', ev => { ev.stopPropagation(); focus(n.dataset.id); }));
+  nodes.forEach(n => {
+    n.addEventListener('click', ev => { ev.stopPropagation(); focus(n.dataset.id); });
+  });
   document.body.addEventListener('click', reset);
 </script>
 </body>

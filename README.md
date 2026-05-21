@@ -21,8 +21,8 @@
 │                             with sketches of what each should do
 ├── diagrams/
 │   └── org-overview.html     interactive HTML diagram of all 8 repos + flows
-└── submodules/               empty in bootstrap commit; see submodules/README.md
-                              for the one-time `git submodule add` to materialize
+└── submodules/               8 git submodules pinned to current main HEADs
+                              (materialized in commit 45e6b2a7)
 ```
 
 `manifest.json` is the machine-readable source-of-truth for which sibling sits at which SHA. The Sibling repos table below is the human-readable version of the same data — when you bump a submodule SHA, regenerate the table from `manifest.json` rather than editing both by hand.
@@ -76,7 +76,7 @@ It **is**:
 
 This repo was bootstrapped from a sandbox via the GitHub Contents API (single-file PUTs) because the worker token's `/git/trees` write access wasn't yet provisioned on a brand-new repo. As a side effect:
 
-- The `submodules/` directory is empty — gitlink tree entries (`mode 160000`) are out of reach for the Contents API. Run the `git submodule add` commands in [`submodules/README.md`](./submodules/README.md) once to materialize them.
+- The `submodules/` directory was empty in the bootstrap commit because `/git/trees` write access hadn't propagated to this newly-created repo yet. Commit `45e6b2a7` materialized all 8 gitlinks directly via the Git Data API once access propagated; see [`submodules/README.md`](./submodules/README.md) for the current pin table.
 - There are no CI workflows; the meta-repo has no validation surface of its own. Sibling repos handle their own validation.
 - File modes are all `100644`; this repo ships no executables.
 

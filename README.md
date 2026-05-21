@@ -1,61 +1,91 @@
 # subagentplatforms
 
-> Workspace meta-repo for the opensubagents stack. Pins all 8 sibling repos at specific SHAs, plus cross-cutting docs nobody else owns.
+> Meta-workspace for the opensubagents stack. Single-clone entry point to all 8 canonical repos plus the cross-cutting notes that don't belong inside any one of them.
 
-## The stack at a glance
+## What's here
 
-| Repo | Role | SHA |
+```
+.
+├── .gitmodules               wiring for the 8 sibling repos
+├── README.md                 this file
+├── CLAUDE.md                 agent-level workspace guidance
+├── VENDORED_FROM.md          third-party upstreams we read from
+├── LICENSE                   MIT
+├── notes/
+│   ├── journal.md            chronological session journal (curated)
+│   ├── architecture.md       cross-repo data flow + dependency graph
+│   └── planned-skills.md     5 placeholders from subagentskills/marketplace.json,
+│                             with sketches of what each should do
+├── diagrams/
+│   └── org-overview.html     interactive HTML diagram of all 8 repos + flows
+└── submodules/               empty in bootstrap commit; see submodules/README.md
+                              for the one-time `git submodule add` to materialize
+```
+
+## Sibling repos (8)
+
+| Repo | Status @ commit | What it is |
 |---|---|---|
-| [`subagentbriefs`](https://github.com/opensubagents/subagentbriefs) | PRD + brief shape + first canonical brief | `b538d087` |
-| [`subagenttasks`](https://github.com/opensubagents/subagenttasks) | task data model: Zod schemas, JSON Schema, types, tests | `ab329d2c` |
-| [`subagenttaskmaster`](https://github.com/opensubagents/subagenttaskmaster) | vendored claude-task-master + rebrand pack | `6a9c632a` |
-| [`subagentarch`](https://github.com/opensubagents/subagentarch) | GraphQL ERD + interactive HTML + Kimball warehouse DDL | `15228221` |
-| [`subagenthtml`](https://github.com/opensubagents/subagenthtml) (private) | fork of anthropics/html-effectiveness | `58c305be` |
-| [`subagentlsp`](https://github.com/opensubagents/subagentlsp) | vendored microsoft/vscode html-language-server | `fd99391f` |
-| [`ts-bootstrap-mcp`](https://github.com/opensubagents/ts-bootstrap-mcp) | MCP plugin: 7 tools for TS toolchain bootstrap | `db22b540` |
-| [`subagentskills`](https://github.com/opensubagents/subagentskills) | catalog of Agent Skills (1 released, 5 planned) | `17557d5f` |
+| [`ts-bootstrap-mcp`](https://github.com/opensubagents/ts-bootstrap-mcp) | `db22b540` | MCP plugin: 7 tools for scaffolding TS projects in cloud web sandboxes. Ships `ts-bootstrap.skill` in `dist-skills/`. |
+| [`subagentskills`](https://github.com/opensubagents/subagentskills) | `17557d5f` | Agent Skills catalog. `marketplace.json` + `skills/ts-bootstrap/`. Five more skills listed as `planned`. |
+| [`subagentarch`](https://github.com/opensubagents/subagentarch) | `15228221` | Canonical GraphQL ERD for the org. Interactive HTML at `docs/01-erd-overview.html`. Kimball star-schema warehouse DDL for AlloyDB / Postgres 17.8 at `warehouse/alloydb-17.8/`. |
+| [`subagenttasks`](https://github.com/opensubagents/subagenttasks) | `ab329d2c` | Zod-derived JSON Schema + types + fixtures + 4 outcome tests for the task data model. |
+| [`subagenttaskmaster`](https://github.com/opensubagents/subagenttaskmaster) | `6a9c632a` | Rebranded npm pack of `eyaltoledano/claude-task-master` published as `@opensubagents/task-master-ai`. |
+| [`subagentbriefs`](https://github.com/opensubagents/subagentbriefs) | `b538d087` | Brief authoring chassis. PRD + brief template + first brief + 323-page Hamster crawl reference under `discovery/`. |
+| [`subagenthtml`](https://github.com/opensubagents/subagenthtml) | `58c305be` | Private fork of `anthropics/html-effectiveness` — 20-file HTML gallery for the "HTML is unreasonably effective" pattern. |
+| [`subagentlsp`](https://github.com/opensubagents/subagentlsp) | `fd99391f` | Vendored `microsoft/vscode/extensions/html-language-features/server` — LSP wrapper for the HTML language service. |
 
-External: `gh-pr-mcp` Cloudflare Worker at `gh-pr-mcp.alex-e62.workers.dev` v0.4.1.
+Plus the non-org-owned `gh-pr-mcp` worker (deployed at `gh-pr-mcp.alex-e62.workers.dev`) — used by every push from a sandbox session.
 
 ## Clone the whole stack
 
-The canonical reference is [`manifest.json`](./manifest.json). Use it to pin everything to known-good SHAs:
-
 ```bash
-mkdir opensubagents && cd opensubagents
-curl -sSL https://raw.githubusercontent.com/opensubagents/subagentplatforms/main/manifest.json \
-  | python3 -c '
-import json, subprocess, sys
-m = json.load(sys.stdin)
-for r in m["repos"]:
-    if r.get("visibility") == "private":
-        print(f"# {r[\"name\"]} is private — skip or auth first", file=sys.stderr); continue
-    subprocess.run(["git","clone","--depth","1",r["url"]])
-    subprocess.run(["git","-C",r["name"],"checkout",r["sha"]])
-'
+git clone https://github.com/opensubagents/subagentplatforms.git
+cd subagentplatforms
+
+# First-time setup: materialize the 8 submodules (see submodules/README.md)
+# After the operator has run `git submodule add ...` once, all subsequent
+# clones can use:
+git clone --recurse-submodules https://github.com/opensubagents/subagentplatforms.git
 ```
 
-When the worker's Git Trees API access is unblocked (see [Known constraints](#known-constraints)), this repo can be reshaped to use proper `.gitmodules` and `git clone --recurse-submodules` instead.
+Once submodules are wired, `git submodule update --remote` fast-forwards every sibling to its `main` HEAD; plain `git submodule update` checks out each at the SHA pinned in this repo's last commit (reproducible snapshot).
 
-## Cross-cutting docs (the part that lives ONLY here)
+## Why this exists
 
-- [`notes/journal.md`](./notes/journal.md) — chronological session journal across the multi-day buildout
-- [`notes/architecture.md`](./notes/architecture.md) — how the 8 repos compose: data flow, ownership boundaries, what runs where
-- [`notes/planned-skills.md`](./notes/planned-skills.md) — sketches for the 5 placeholder skills in `subagentskills/marketplace.json`
-- [`diagrams/org-overview.html`](./diagrams/org-overview.html) — Thariq-format interactive map of the 8 repos
-- [`VENDORED_FROM.md`](./VENDORED_FROM.md) — vendor clones we read from but never republish (Microsoft, Anthropic, Cloudflare, ChromeDevTools)
+Walking into the stack cold means cloning 8 repos in 8 commands, learning which one owns the data model vs the scaffolding vs the catalog vs the tasks vs the briefs. This repo is the table of contents and the snapshot manifest.
 
-## Known constraints
+It is **not**:
 
-The `gh-pr-mcp` worker token currently has:
+- a monorepo (each sibling stays autonomous)
+- a build system (no source code lives here)
+- a release manifest (siblings publish independently)
 
-- `contents: write` ✓
-- `git/trees: write` ✗ — blocked on freshly-created repos (403)
-- `workflows: write` ✗ — blocked on `.github/workflows/*` AND on any path containing `workflows`
-- Contents API used as fallback **cannot set mode 100755** on executable files
+It **is**:
 
-These shaped some decisions in this repo: no `.gitmodules` yet (uses `manifest.json` instead), no `.github/workflows/*` (this repo doesn't need CI of its own — it carries docs, not validated content). When the constraints are lifted, see the migration notes in [`notes/architecture.md`](./notes/architecture.md#future-migrations).
+- the single command that gives you everything: `git clone --recurse-submodules ...`
+- the home for cross-cutting notes that would feel awkward in any one sibling
+- the canonical answer to "what's the state of the org right now?"
+
+## Bootstrap-commit caveats
+
+This repo was bootstrapped from a sandbox via the GitHub Contents API (single-file PUTs) because the worker token's `/git/trees` write access wasn't yet provisioned on a brand-new repo. As a side effect:
+
+- The `submodules/` directory is empty — gitlink tree entries (`mode 160000`) are out of reach for the Contents API. Run the `git submodule add` commands in [`submodules/README.md`](./submodules/README.md) once to materialize them.
+- There are no CI workflows; the meta-repo has no validation surface of its own. Sibling repos handle their own validation.
+- File modes are all `100644`; this repo ships no executables.
+
+All three are one-time follow-ups, not ongoing constraints.
+
+## See also
+
+- [`CLAUDE.md`](./CLAUDE.md) — guidance for coding agents working here
+- [`VENDORED_FROM.md`](./VENDORED_FROM.md) — third-party upstreams we read for reference
+- [`notes/journal.md`](./notes/journal.md) — chronological session history
+- [`notes/architecture.md`](./notes/architecture.md) — how the 8 repos wire together
+- [`notes/planned-skills.md`](./notes/planned-skills.md) — design sketches for the 5 placeholder skills in `subagentskills`
+- [`diagrams/org-overview.html`](./diagrams/org-overview.html) — interactive map of the 8 repos and their data flows
 
 ## License
 
-MIT.
+MIT — matches every sibling.

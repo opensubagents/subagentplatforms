@@ -1,6 +1,6 @@
 # notes/planned-skills.md
 
-Five skills listed as `status: "planned"` in `subagentskills/.claude-plugin/marketplace.json` but not yet authored. Each is sketched here at the level of detail an agent would need to do a credible first draft of `SKILL.md`.
+Five skills originally listed as `status: "planned"` in `subagentskills/.claude-plugin/marketplace.json`, each sketched at the level of detail an agent would need to do a credible first draft of `SKILL.md`. As of `subagentskills@351f24c7`, the catalog now also includes a sixth authored entry (`anthropic-subprocessor-lanes`, released) — see Authored section at the bottom.
 
 The point of this file is so that whichever session picks up "go author the next skill" doesn't have to re-derive the intent.
 
@@ -200,3 +200,24 @@ curl -v), STOP and recover with `history -c` then `unset NEW_TOKEN`.
 ## Authoring order suggestion
 
 If asked to build them in order, do `reveal-and-restore-worker-token` first (smallest, no dependencies, captures something we already do regularly). Then `subagenttasks-validator` (small, exercises the schema toolchain). Then `brief-author-canonical` (small, mostly templating). `html-effectiveness-builder` and `graphql-erd-from-zod` are bigger and benefit from the smaller three being done first as references.
+
+---
+
+## Authored
+
+### 6. `anthropic-subprocessor-lanes` (released 2026-05-22 in `subagentskills@351f24c7`)
+
+**Pairs with**: an in-repo MCP server at `skills/anthropic-subprocessor-lanes/src/server.ts` (no external sibling plugin; the server is bundled with the skill).
+
+**Trigger phrases**: "who does Anthropic use as a subprocessor", "list Anthropic's vendors", "trust.anthropic.com lanes", "npm + github + skills.sh for X", "subprocessor compliance report", "supply chain snapshot Anthropic".
+
+**What it does**: joins the 18-entry list at `trust.anthropic.com/subprocessors` against three public developer-surface lanes (npm scope, GitHub org, skills.sh page). The trust page is Vanta-rendered so the list is hand-maintained in `data/subprocessors.json`; per-lane snapshots were verified 2026-05-21 by scraping each lane from a Cloudflare container (the chat sandbox's egress proxy blocks npmjs.com / github.com / skills.sh).
+
+**Three tools**:
+- `anthropic_subprocessors` — read the snapshot, zero network
+- `anthropic_subprocessor_report` — live fan-out across all 18×3 lanes
+- `org_lanes` — ad-hoc lookup for any single org (not just Anthropic's)
+
+**Bundled assets**: `data/subprocessors.json` (the canonical list + verified snapshot), `references/lane-quirks.md` (Cloudflare/Twilio unscoped, Sentry skills.sh 404, ElevenLabs npm WAF, GitHub rate limits).
+
+**Why this was authored ahead of the order above**: emerged from a real session that joined the trust page against the user's prior interest in Cloudflare and Anthropic's developer surfaces. The session produced both the data and the code, so it shipped as a finished skill rather than a sketch.

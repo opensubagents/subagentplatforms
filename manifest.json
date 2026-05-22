@@ -2,7 +2,7 @@
   "$schema": "https://opensubagents.io/schemas/platform-manifest.v1.json",
   "platform": "opensubagents",
   "version": "0.1.0",
-  "generated_at": "2026-05-21",
+  "generated_at": "2026-05-22",
   "description": "Pinned snapshot of the opensubagents repo stack. Each entry is a sibling repo and the SHA it was at when this manifest was cut. Clone scripts should treat these as the canonical reference points; rebuild the manifest when any sibling repo advances.",
   "repos": [
     {
@@ -71,9 +71,14 @@
       "name": "subagentskills",
       "role": "catalog of Agent Skills used across the stack; marketplace.json + skills/<name>/",
       "url": "https://github.com/opensubagents/subagentskills",
-      "sha": "17557d5f",
+      "sha": "351f24c7",
       "branch": "main",
-      "released_skills": ["ts-bootstrap"],
+      "released_skills": [
+        "ts-bootstrap",
+        "structured-research-output",
+        "research-brief-xml",
+        "anthropic-subprocessor-lanes"
+      ],
       "planned_skills": [
         "reveal-and-restore-worker-token",
         "html-effectiveness-builder",
